@@ -1,0 +1,130 @@
+# Copyright (c) 2022-2022 Huawei Device Co., Ltd. All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without modification,
+# are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice, this list of
+#    conditions and the following disclaimer.
+#
+# 2. Redistributions in binary form must reproduce the above copyright notice, this list
+#    of conditions and the following disclaimer in the documentation and/or other materials
+#    provided with the distribution.
+#
+# 3. Neither the name of the copyright holder nor the names of its contributors may be used
+#    to endorse or promote products derived from this software without specific prior written
+#    permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+# CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+# EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+mainmenu "Kernel Configuration"
+
+menu "Compiler"
+choice
+    prompt "Compiler type"
+    default COMPILER_GCC
+    help
+      Choose compiler type.
+
+config COMPILER_GCC
+    bool "GCC"
+
+config CROSS_COMPILE
+    string
+    depends on COMPILER_GCC
+    default "arm-none-eabi-"
+
+endchoice
+
+endmenu
+
+menu "Platform"
+
+######################### config options of bsp #####################
+config PLATFORM
+    string
+    default "virt"            if PLATFORM_QEMU_ARM_VIRT_CM4
+
+config PRODUCT_NAME
+    string
+    default "arm_mps2_an386" if PRODUCT_QEMU_ARM_MPS2_AN386
+
+config DEVICE_COMPANY
+    string
+    default "qemu" if PLATFORM_QEMU_ARM_VIRT_CM4
+
+choice
+    prompt "Chip"
+    default PLATFORM_QEMU_ARM_VIRT_CM4
+    help
+      Qemu ARM Virt variants (based on different CPU types):
+       - qemu_arm_virt_cm4
+
+config PLATFORM_QEMU_ARM_VIRT_CM4
+    bool "qemu_arm_virt_cm4"
+    select ARCH_CORTEX_M4
+    help
+        QEMU ARM Virtual Platform using Cortex-M4 CPU.
+
+endchoice
+
+choice
+    prompt "Product"
+    help
+      Select your target board.
+
+config PRODUCT_QEMU_ARM_MPS2_AN386
+    bool "arm_mps2_an386" if PLATFORM_QEMU_ARM_VIRT_CM4
+
+endchoice
+endmenu
+
+######################### config options of UniProton #####################
+source config/Kconfig
+
+# Device Kconfig import
+osource "$(DEVICE_PATH)/Kconfg"
+
+menu "Stack Smashing Protector (SSP) Compiler Feature"
+
+choice
+    prompt "Enable stack buffer overflow detection"
+    default  CC_STACKPROTECTOR_STRONG
+    ---help---
+    This option turns on the -fstack-protector GCC feature. This
+    feature puts, at the beginning of functions, a canary value on
+    the stack just before the return address, and validates
+    the value just before actually returning.  Stack based buffer
+    overflows (that need to overwrite this return address) now also
+    overwrite the canary, which gets detected and the attack is then
+    neutralized via a kernel panic.
+
+    This feature requires gcc version 4.2 or above, or a distribution
+    gcc with the feature backported. Older versions are automatically
+    detected and for those versions, this configuration option is
+    ignored. (and a warning is printed during bootup)
+
+config CC_NO_STACKPROTECTOR
+    bool "-fno-stack-protector"
+
+config CC_STACKPROTECTOR
+    bool "-fstack-protector"
+
+config CC_STACKPROTECTOR_STRONG
+    bool "-fstack-protector-strong"
+
+config CC_STACKPROTECTOR_ALL
+    bool "-fstack-protector-all"
+
+endchoice
+
+endmenu
