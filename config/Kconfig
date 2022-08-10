@@ -1,0 +1,9 @@
+mainmenu "UniProton Configuration"
+
+#should source arch Kconfig first
+source "config/arch/Kconfig"
+source "config/core/Kconfig"
+source "config/mem/Kconfig"
+source "config/om/Kconfig"
+source "config/security/Kconfig"
+source "config/utility/Kconfig"
