@@ -1,0 +1,78 @@
+menu "ARM7-M Sepecfic Configuration"
+
+depends on OS_ARCH_ARMV7_M
+
+config INTERNAL_OS_CORTEX_M4
+	bool
+	select INTERNAL_OS_BYTE_ORDER_LE
+
+choice
+	prompt "Cpu Type"
+
+config INTERNAL_OS_PLATFORM_M4
+	bool "CORTEX_M4"
+	select INTERNAL_OS_CORTEX_M4
+
+endchoice
+
+config ARCH_CPU
+    string
+    default "cortex-m4" if INTERNAL_OS_CORTEX_M4
+
+config THUMB
+    string
+    default "thumb"    if INTERNAL_OS_CORTEX_M4
+
+choice
+    prompt "Arch float type"
+    default ARCH_FLOAT_SOFTFP
+
+config ARCH_FLOAT_SOFT
+    bool "soft"
+
+config ARCH_FLOAT_SOFTFP
+    bool "softfp"
+
+config ARCH_FLOAT_HARD
+    bool "hard"
+
+endchoice
+
+config ARCH_FLOAT
+    string
+    default "soft"     if ARCH_FLOAT_SOFT
+    default "softfp"   if ARCH_FLOAT_SOFTFP
+    default "hard"     if ARCH_FLOAT_HARD
+
+choice
+    prompt "Arch fpu type"
+    default ARCH_FPU_VFPV4_D16
+
+config ARCH_FPU_VFPV3
+    bool "vfpv3"
+
+config ARCH_FPU_VFPV3_D16
+    bool "vfpv3-d16"
+
+config ARCH_FPU_NEON_VFPV4
+    bool "neon-vfpv4"
+
+config ARCH_FPU_VFPV4
+    bool "vfpv4"
+
+config ARCH_FPU_VFPV4_D16
+    bool "vfpv4-d16"
+
+endchoice
+
+config ARCH_FPU
+    string
+    default "vfpv3"        if ARCH_FPU_VFPV3
+    default "vfpv3-d16"    if ARCH_FPU_VFPV3_D16
+    default "neon-vfpv4"   if ARCH_FPU_NEON_VFPV4
+    default "vfpv4"        if ARCH_FPU_VFPV4
+    default "vfpv4-d16"    if ARCH_FPU_VFPV4_D16
+
+source config/arch/cpu/armv7-m/cortex-m4/Kconfig
+
+endmenu
