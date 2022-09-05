@@ -2,6 +2,6 @@ menu "Timer Modules Configuration"
 
 config INTERNAL_OS_SWTMR
 	bool "Whether support software timer or not"
-	default n
+	default y
 
 endmenu

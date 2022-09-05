@@ -15,12 +15,12 @@
 #ifndef PRT_CONFIG_H
 #define PRT_CONFIG_H
 
+#include "prt_buildef.h"
+#include "prt_typedef.h"
+
 #ifdef OS_DEVICE_CONFIG
 #include "target_config.h"
 #endif
-
-#include "prt_buildef.h"
-#include "prt_typedef.h"
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -156,6 +156,15 @@ extern "C" {
 /* IDLE钩子最大支持个数, 范围[0, 255] */
 #ifndef OS_HOOK_IDLE_NUM
 #define OS_HOOK_IDLE_NUM                                0
+#endif
+
+/* 启动模块，系统支持的启动层级，最小为两级, 该枚举由具体产品定义 */
+#ifndef OS_DEVICE_CONFIG
+typedef enum OsinitPhaseId {
+    OS_MOUDLE_REG,
+    OS_MOUDLE_INIT,
+    OS_MOUDLE_CONFIG,
+};
 #endif
 
 #ifdef __cplusplus
