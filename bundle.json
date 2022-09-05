@@ -22,7 +22,7 @@
     "author": {},
     "contributors": [],
     "segment": {
-        "destPath": "kernel/uniproton/build"
+        "destPath": "kernel/uniproton"
     },
     "component": {
         "name": "uniproton",
@@ -46,7 +46,7 @@
         },
         "build": {
             "sub_component": [
-                "//kernel/uniproton/build:build_kernel_image"
+                "//kernel/uniproton:build_kernel_image"
             ],
             "inner_kits": [],
             "test": []

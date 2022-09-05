@@ -42,15 +42,11 @@ extern "C" {
 #endif
 
 #ifndef OS_INIT_ID
-#define OS_INIT_ID     1
+#define OS_INIT_ID 1
 #endif
 
 #ifndef OS_TSK_CORE_BYTES_IN_PID
 #define OS_TSK_CORE_BYTES_IN_PID 3
-#endif
-
-#ifndef OS_MOUDLE_CONFIG
-#define OS_MOUDLE_CONFIG 2
 #endif
 
 #define OS_CORTEX_M4 4

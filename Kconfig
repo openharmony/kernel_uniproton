@@ -47,49 +47,8 @@ endchoice
 
 endmenu
 
-menu "Platform"
-
-######################### config options of bsp #####################
-config PLATFORM
-    string
-    default "virt"            if PLATFORM_QEMU_ARM_VIRT_CM4
-
-config PRODUCT_NAME
-    string
-    default "arm_mps2_an386" if PRODUCT_QEMU_ARM_MPS2_AN386
-
-config DEVICE_COMPANY
-    string
-    default "qemu" if PLATFORM_QEMU_ARM_VIRT_CM4
-
-choice
-    prompt "Chip"
-    default PLATFORM_QEMU_ARM_VIRT_CM4
-    help
-      Qemu ARM Virt variants (based on different CPU types):
-       - qemu_arm_virt_cm4
-
-config PLATFORM_QEMU_ARM_VIRT_CM4
-    bool "qemu_arm_virt_cm4"
-    select ARCH_CORTEX_M4
-    help
-        QEMU ARM Virtual Platform using Cortex-M4 CPU.
-
-endchoice
-
-choice
-    prompt "Product"
-    help
-      Select your target board.
-
-config PRODUCT_QEMU_ARM_MPS2_AN386
-    bool "arm_mps2_an386" if PLATFORM_QEMU_ARM_VIRT_CM4
-
-endchoice
-endmenu
-
 ######################### config options of UniProton #####################
-source config/Kconfig
+osource "config/Kconfig"
 
 # Device Kconfig import
 osource "$(DEVICE_PATH)/Kconfg"

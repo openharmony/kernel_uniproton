@@ -73,6 +73,6 @@ config ARCH_FPU
     default "vfpv4"        if ARCH_FPU_VFPV4
     default "vfpv4-d16"    if ARCH_FPU_VFPV4_D16
 
-source config/arch/cpu/armv7-m/cortex-m4/Kconfig
+source "config/arch/cpu/armv7-m/cortex-m4/Kconfig"
 
 endmenu

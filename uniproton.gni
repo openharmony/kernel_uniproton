@@ -40,7 +40,7 @@ exec_script("//build/lite/run_shell_cmd.py",
             [ "env" + " CONFIG_=" + " KCONFIG_CONFIG_HEADER='y=true'" +
                   " KCONFIG_CONFIG=$os_config_file" +
                   " BOARD_COMPANY=$device_company" +
-                  " DEVICE_PATH=$device_path" + " srctree=" + rebase_path(".") + "/../" +
+                  " DEVICE_PATH=$device_path" + " srctree=" + rebase_path(".") +
                   " genconfig" + " --header-path $MENUCONFIG_H" +
                   " --file-list kconfig_files.txt" +
                   " --env-list kconfig_env.txt" + " --config-out config.gni" ],
@@ -54,14 +54,6 @@ OSTHIRDPARTY = "//third_party"
 
 kernel_base_sources = [
   "$OSTOPDIR/config/prt_config.c",
-  "$OSTOPDIR/core/ipc/event/prt_event.c",
-  "$OSTOPDIR/core/ipc/queue/prt_queue.c",
-  "$OSTOPDIR/core/ipc/queue/prt_queue_del.c",
-  "$OSTOPDIR/core/ipc/queue/prt_queue_init.c",
-  "$OSTOPDIR/core/ipc/queue/prt_queue_minor.c",
-  "$OSTOPDIR/core/ipc/sem/prt_sem.c",
-  "$OSTOPDIR/core/ipc/sem/prt_sem_init.c",
-  "$OSTOPDIR/core/ipc/sem/prt_sem_minor.c",
   "$OSTOPDIR/core/kernel/irq/prt_irq.c",
   "$OSTOPDIR/core/kernel/kexc/prt_kexc.c",
   "$OSTOPDIR/core/kernel/sys/prt_sys.c",
@@ -83,11 +75,31 @@ kernel_base_sources = [
   "$OSTOPDIR/core/kernel/task/prt_taskself_id.c",
   "$OSTOPDIR/core/kernel/tick/prt_tick.c",
   "$OSTOPDIR/core/kernel/tick/prt_tick_init.c",
+  "$OSTOPDIR/core/kernel/timer/prt_timer.c",
+  "$OSTOPDIR/core/kernel/timer/prt_timer_minor.c",
+]
+
+kernel_swtmr_sources = [
   "$OSTOPDIR/core/kernel/timer/swtmr/prt_swtmr.c",
   "$OSTOPDIR/core/kernel/timer/swtmr/prt_swtmr_init.c",
   "$OSTOPDIR/core/kernel/timer/swtmr/prt_swtmr_minor.c",
-  "$OSTOPDIR/core/kernel/timer/prt_timer.c",
-  "$OSTOPDIR/core/kernel/timer/prt_timer_minor.c",
+]
+
+kernel_ipc_event_sources = [
+  "$OSTOPDIR/core/ipc/event/prt_event.c",
+]
+
+kernel_ipc_queue_sources = [
+  "$OSTOPDIR/core/ipc/queue/prt_queue.c",
+  "$OSTOPDIR/core/ipc/queue/prt_queue_del.c",
+  "$OSTOPDIR/core/ipc/queue/prt_queue_init.c",
+  "$OSTOPDIR/core/ipc/queue/prt_queue_minor.c",
+]
+
+kernel_ipc_sem_sources = [
+  "$OSTOPDIR/core/ipc/sem/prt_sem.c",
+  "$OSTOPDIR/core/ipc/sem/prt_sem_init.c",
+  "$OSTOPDIR/core/ipc/sem/prt_sem_minor.c",
 ]
 
 kernel_mem_sources = [
@@ -96,15 +108,18 @@ kernel_mem_sources = [
 ]
 
 kernel_om_sources = [
+  "$OSTOPDIR/om/err/prt_err.c",
+  "$OSTOPDIR/om/err/prt_err_init.c",
+  "$OSTOPDIR/om/hook/prt_hook_init.c",
+]
+
+kernel_om_cpup_sources = [
   "$OSTOPDIR/om/cpup/prt_cpup.c",
   "$OSTOPDIR/om/cpup/prt_cpup_minor.c",
   "$OSTOPDIR/om/cpup/prt_cpup_thread.c",
   "$OSTOPDIR/om/cpup/prt_cpup_thread_64.c",
   "$OSTOPDIR/om/cpup/prt_cpup_thread_init.c",
   "$OSTOPDIR/om/cpup/prt_cpup_warn.c",
-  "$OSTOPDIR/om/err/prt_err.c",
-  "$OSTOPDIR/om/err/prt_err_init.c",
-  "$OSTOPDIR/om/hook/prt_hook_init.c",
 ]
 
 kernel_security_sources = [
