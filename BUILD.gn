@@ -54,7 +54,7 @@ config("arch_config") {
   if (defined(THUMB)) {
     cflags += [
       "-mthumb",
-      "-Wa,-mimplicit-it=thumb"
+      "-Wa,-mimplicit-it=thumb",
     ]
   }
   asmflags = cflags
@@ -190,6 +190,7 @@ config("os_config") {
     ":arch_config",
     ":stdinc_config",
     ":ssp_config",
+
     #":warn_config",
     ":strong_waring_flag",
     ":misc_config",
@@ -203,19 +204,32 @@ config("os_config") {
 
 static_library("libkernel") {
   sources = kernel_base_sources
+  if (defined(OS_OPTION_EVENT)) {
+    sources += kernel_ipc_event_sources
+  }
+  if (defined(OS_OPTION_QUEUE)) {
+    sources += kernel_ipc_queue_sources
+  }
+  if (defined(INTERNAL_OS_SWTMR)) {
+    sources += kernel_swtmr_sources
+  }
+  sources += kernel_ipc_sem_sources
   sources += kernel_mem_sources
   sources += kernel_om_sources
+  if (defined(OS_OPTION_CPUP)) {
+    sources += kernel_om_cpup_sources
+  }
   sources += kernel_security_sources
   sources += kernel_utility_sources
 
   if ("$board_cpu" == "cortex-m4") {
-     sources += arch_cortex_m4_sources
+    sources += arch_cortex_m4_sources
   }
 
   configs += [ ":os_config" ]
 
   deps = [ "//third_party/bounds_checking_function:libsec_static" ]
-  deps += [ "//third_party/musl/porting/rtos/kernel:kernel" ]
+  deps += [ "//third_party/musl/porting/uniproton/kernel:kernel" ]
 }
 
 group("kernel") {
@@ -223,9 +237,7 @@ group("kernel") {
 }
 
 executable("uniproton") {
-  configs += [
-    ":os_config",
-  ]
+  configs += [ ":os_config" ]
 
   ldflags = [
     "-static",
@@ -240,7 +252,7 @@ executable("uniproton") {
   if (HAVE_DEVICE_SDK) {
     deps += [
       "$device_path:device",
-      "$product_path:$product"
+      "$product_path:$product",
     ]
   }
 }
@@ -259,7 +271,6 @@ build_ext_component("build_kernel_image") {
   objdump = "${compile_prefix}objdump$toolchain_cmd_suffix"
 
   command = "$objcopy -O binary $uniproton_name $uniproton_name.bin"
-  command +=
-      " && sh -c '$objdump -t $uniproton_name | sort >$uniproton_name.sym.sorted'"
+  command += " && sh -c '$objdump -t $uniproton_name | sort >$uniproton_name.sym.sorted'"
   command += " && sh -c '$objdump -d $uniproton_name >$uniproton_name.asm'"
 }
