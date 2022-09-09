@@ -233,7 +233,10 @@ static_library("libkernel") {
 }
 
 group("kernel") {
-  deps = [ ":libkernel" ]
+  deps = [
+    ":libkernel",
+    "components",
+  ]
 }
 
 executable("uniproton") {
