@@ -1,39 +1,115 @@
-# kernel_uniproton
+# UniProton kernel
 
-#### 介绍
-{**以下是 Gitee 平台说明，您可以替换此简介**
-Gitee 是 OSCHINA 推出的基于 Git 的代码托管平台（同时支持 SVN）。专为开发者提供稳定、高效、安全的云端软件开发协作平台
-无论是个人、团队、或是企业，都能够用 Gitee 实现代码托管、项目管理、协作开发。企业项目请看 [https://gitee.com/enterprises](https://gitee.com/enterprises)}
+## Introduction
 
-#### 软件架构
-软件架构说明
+UniProton main purpose is for the upper business software provides a unified operating system platform, shielding hardware differences, and provide powerful debugging. This enables business software to be quickly transplanted between different hardware platforms, facilitates product chip selection, and reduces hardware procurement cost and software maintenance cost.
 
+## Directory Structure
 
-#### 安装教程
+```
+/kernel/uniproton
+├── UniProton   # UniProton base kernel
+├── components  # Optional components
+│   ├── fs      # File systems
+│   └── net     # Networking functions
+├── config      # Kconfig
+└── kal         # Kernel abstraction layer
+    └── posix   # POSIX API support
+```
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+## Constraints
 
-#### 使用说明
+OpenHarmony uniproton supports only C and C++.
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+Applicable architecture: See the directory structure for the arch layer.
 
-#### 参与贡献
+## Usage
 
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
+The OpenHarmony uniproton kernel build system is a modular build system based on Generate Ninja (GN) and Ninja. It supports module-based configuration, tailoring, and assembling, and helps you build custom products. This document describes how to build a uniproton project based on GN and Ninja. For details about the methods such as GCC+gn, IAR, and Keil MDK, visit the community websites.
 
+## Compilation and Building
 
-#### 特技
+### 1.Setting Up the Environment
 
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+Before setting up the environment for a development board, you must set up the basic system environment for OpenHarmony first. The basic system environment includes the OpenHarmony build environment and development environment. For details, see [Setting Up Development Environment](https://gitee.com/openharmony/docs/blob/HEAD/en/device-dev/quick-start/quickstart-lite-env-setup.md).
+
+### 2.Obtaining the OpenHarmony Source Code
+
+For details about how to obtain the source code, see [Source Code Acquisition](https://gitee.com/openharmony/docs/blob/HEAD/en/device-dev/get-code/sourcecode-acquire.md). This document assumes that the clone directory is ~/openHarmony after the complete OpenHarmony repository code is obtained.
+
+### 3.Download the incubation project code
+
+Execute it in the //kernel directory:
+```
+git clone https://gitee.com/openharmony-sig/kernel_uniproton.git
+
+mv kernel_uniproton uniproton
+```
+
+Execute it in the //vendor directory:
+```
+git clone https://gitee.com/openharmony-sig/vendor_alientek
+
+mv vendor_alientek alientek
+```
+### 4.Compilation
+
+Execute in the source root directory:
+```
+hb set
+```
+
+Choice: alientek@rtos_demo
+
+An error message is displayed for the first time because the board directory does not exist. You need to manually modify file ***ohos_config.json***， The modifications are as follows:
+```
+{
+  ...
+
+  "device_path": "/Project Path/device/soc/st/stm32f407zg/uniproton",
+
+  ...
+
+  "patch_cache": "/Project Path/vendor/alientek/rtos_demo/patch.yml",
+
+  ...
+
+  "device_config_path": "/Project Path/device/soc/st/stm32f407zg/uniproton"
+}
+```
+
+The ***Project Path*** is the absolute path to the OpenHarmony source code, See the context of ohos_config.json.
+
+The command at first compile time:
+```
+hb build --patch
+```
+
+Subsequent compilation command:
+```
+hb build -f
+```
+
+### 5.Notes
+
+At present, except for the above two SIG repository involved in the whole incubation project, all other repository use the existing repository of OpenHarmony. The repository modified on OpenHarmony are as follows:
+
+```
+//device/soc/st
+
+//third_party/musl
+
+//build/lite
+```
+
+These three bins are managed in the form of patches during the incubation phase, and then synchronously submitted to the OpenHarmony community upon incubation graduation.
+
+patch maintenance method:
+
+With //device/soc/st example, The patch of the bin has been applied during compilation. If there is any modification, it can be directly modified. After modification, all modifications are submitted locally, and a submission record is generated.
+
+```
+git format-patch [commit Id]
+
+mv 0001-feat-xxx.patch ../../../vendor/alientek/patches/0001-device-soc-st-stm32f407zg.patch
+```
