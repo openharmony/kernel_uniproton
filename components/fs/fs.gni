@@ -26,10 +26,26 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-group("components") {
-  deps = [
-    "net",
-    "fs"
-  ]
-}
+FS_PORTING_DIR = get_path_info(".", "abspath")
 
+FS_PORTING_INCLUDE_DIRS = [
+  "$FS_PORTING_DIR/porting",
+  "$FS_PORTING_DIR/vfs",
+  "$FS_PORTING_DIR/littlefs",
+]
+
+FS_PORTING_FILES = [
+  "$FS_PORTING_DIR/porting/fs.c",
+  "$FS_PORTING_DIR/porting/fs_porting.c",
+  "$FS_PORTING_DIR/vfs/vfs_files.c",
+  "$FS_PORTING_DIR/vfs/vfs_fs.c",
+  "$FS_PORTING_DIR/vfs/vfs_init.c",
+  "$FS_PORTING_DIR/vfs/vfs_maps.c",
+  "$FS_PORTING_DIR/vfs/vfs_mount.c",
+  "$FS_PORTING_DIR/vfs/vfs_partition.c",
+  "$FS_PORTING_DIR/littlefs/lfs_adapter.c",
+]
+
+if (defined(OSCFG_TEST)) {
+  LWIP_PORTING_FILES += [ "$FS_PORTING_DIR/test/fs_test.c" ]
+}
