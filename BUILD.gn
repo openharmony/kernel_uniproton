@@ -32,6 +32,7 @@ import("uniproton.gni")
 declare_args() {
   uniproton_name = "OHOS_Image"
   HAVE_DEVICE_SDK = true
+  HAVE_KERNEL_TEST = false
 }
 
 arch_cflags = []
@@ -237,6 +238,10 @@ group("kernel") {
     ":libkernel",
     "components",
   ]
+
+  if (HAVE_KERNEL_TEST) {
+    deps += [ "testsuites" ]
+  }
 }
 
 executable("uniproton") {
