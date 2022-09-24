@@ -1,59 +1,26 @@
 /*
- * Copyright (c) 2013-2019 Huawei Technologies Co., Ltd. All rights reserved.
- * Copyright (c) 2022-2022 Huawei Device Co., Ltd. All rights reserved.
+ * Copyright (c) 2022-2022 Huawei Technologies Co., Ltd. All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this list of
- * conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list
- * of conditions and the following disclaimer in the documentation and/or other materials
- * provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its contributors may be used
- * to endorse or promote products derived from this software without specific prior written
- * permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * UniProton is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *          http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
+ * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
+ * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ * Create: 2022-09-21
+ * Description: UniProton基础测试框架。
  */
-
-
 #ifndef _LOS_ICUNIT_H
 #define _LOS_ICUNIT_H
-#include "osTest.h"
 
-#ifdef TST_DRVPRINT
-#include "VOS_typdef.h"
-#include "uartdriver.h"
-#endif
-
-#ifdef __cplusplus
-#if __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-#endif /* __cplusplus */
-
-typedef unsigned short iUINT16;
-typedef unsigned int iUINT32;
-typedef signed short iINT16;
-typedef signed long iINT32;
-typedef char iCHAR;
-typedef void iVOID;
-
-typedef unsigned long iiUINT32;
-
+typedef unsigned short TUINT16;
+typedef unsigned int TUINT32;
+typedef signed short TINT16;
+typedef signed long TINT32;
+typedef char TCHAR;
+typedef unsigned long TUINTPTR;
 
 #ifndef FALSE
 #define FALSE 0
@@ -70,27 +37,18 @@ typedef unsigned long iiUINT32;
 
 #define TEST_MODE (FUNCTION_TEST)
 
-typedef iUINT32 (*CASE_FUNCTION)(void);
+typedef TUINT32 (*CASE_FUNCTION)(void);
 
 typedef struct {
-    iCHAR *pcCaseID;
-    CASE_FUNCTION pstCaseFunc;
-    iUINT16 testcase_layer;
-    iUINT16 testcase_module;
-    iUINT16 testcase_level;
-    iUINT16 testcase_type;
-    iiUINT32 retCode;
-    iUINT16 errLine;
-} ICUNIT_CASE_S;
-
-typedef struct {
-    iUINT16 uwCaseCnt;
-    iCHAR *pcSuitID;
-    iCHAR *pucFilename;
-    ICUNIT_CASE_S *pstCaseList;
-    iUINT16 passCnt;
-    iUINT16 failCnt;
-} ICUNIT_SUIT_S;
+    TCHAR *pcCaseID;
+    CASE_FUNCTION caseFunc;
+    TUINT16 testcaseLayer;
+    TUINT16 testcaseModule;
+    TUINT16 testcaseLevel;
+    TUINT16 testcaseType;
+    TUINTPTR retCode;
+    TUINT16 errLine;
+} ICuintCaseStatus;
 
 typedef enum {
     TEST_TASK = 0,
@@ -142,28 +100,10 @@ typedef enum {
     TEST_UNAME,
     TEST_MISC,
     TEST_EXC,
-#if defined(LOSCFG_3RDPARTY_TEST)
-    TEST_THTTPD,
-    TEST_BIDIREFC,
-    TEST_CJSON,
-    TEST_CURL,
-    TEST_FFMPEG,
-    TEST_FREETYPE,
-    TEST_INIPARSER,
-    TEST_JSONCPP,
-    TEST_LIBICONV,
-    TEST_LIBJPEG,
-    TEST_LIBPNG,
-    TEST_OPENEXIF,
-    TEST_OPENSSL,
-    TEST_OPUS,
-    TEST_SQLITE,
-    TEST_TINYXML,
-#endif
     TEST_DRIVERBASE,
     TEST_DYNLINK,
     TEST_LMS,
-} LiteOS_test_module;
+} OsTestModule;
 
 typedef enum {
     TEST_OS = 0,
@@ -177,31 +117,24 @@ typedef enum {
     TEST_SHELL,
     TEST_LINUX,
     TEST_USB,
-#if defined(LOSCFG_3RDPARTY_TEST)
-    TEST_3RDPARTY,
-#endif
     TEST_DRIVERFRAME,
     TEST_CONTEXHUB
-} LiteOS_test_layer;
+} OsTestLayer;
 
 typedef enum {
     TEST_LEVEL0 = 0,
     TEST_LEVEL1,
     TEST_LEVEL2,
     TEST_LEVEL3
-} LiteOS_test_level;
+} OsTestLevel;
 
 typedef enum {
     TEST_FUNCTION = 0,
     TEST_PRESSURE,
     TEST_PERFORMANCE
-} LiteOS_test_type;
+} OsTestType;
 
-
-extern iUINT16 iCunit_errLineNo;
-extern iiUINT32 iCunit_errCode;
-extern void ICunitSaveErr(iiUINT32 line, iiUINT32 retCode);
-
+extern void ICunitSaveErr(TUINTPTR line, TUINTPTR retCode);
 
 #define ICUNIT_UNINIT 0x0EF00000
 #define ICUNIT_OPENFILE_FAILED 0x0EF00001
@@ -212,169 +145,137 @@ extern void ICunitSaveErr(iiUINT32 line, iiUINT32 retCode);
 
 #define ICUNIT_SUCCESS 0x00000000
 
-#define ICUNIT_TRACK_EQUAL(param, value, retcode)       \
-    do {                                                \
-        if ((param) != (value)) {                       \
-            ICunitSaveErr(__LINE__, (iiUINT32)retcode); \
-        }                                               \
-    } while (0)
+#define ICUNIT_TRACK_EQUAL(param, value, retcode) do { \
+    if ((param) != (value)) {                         \
+        ICunitSaveErr(__LINE__, (TUINTPTR)(retcode)); \
+    }                                                 \
+} while (0)
 
-#define ICUNIT_TRACK_NOT_EQUAL(param, value, retcode)   \
-    do {                                                \
-        if ((param) == (value)) {                       \
-            ICunitSaveErr(__LINE__, (iiUINT32)retcode); \
-        }                                               \
-    } while (0)
+#define ICUNIT_TRACK_NOT_EQUAL(param, value, retcode) do { \
+    if ((param) == (value)) {                         \
+        ICunitSaveErr(__LINE__, (TUINTPTR)(retcode)); \
+    }                                                 \
+} while (0)
 
-#define ICUNIT_ASSERT_EQUAL_VOID(param, value, retcode) \
-    do {                                                \
-        if ((param) != (value)) {                       \
-            ICunitSaveErr(__LINE__, (iiUINT32)retcode); \
-            return;                                     \
-        }                                               \
-    } while (0)
+#define ICUNIT_ASSERT_EQUAL_VOID(param, value, retcode) do { \
+    if ((param) != (value)) {                         \
+        ICunitSaveErr(__LINE__, (TUINTPTR)(retcode)); \
+        return;                                       \
+    }                                                 \
+} while (0)
 
-#define ICUNIT_ASSERT_NOT_EQUAL_VOID(param, value, retcode) \
-    do {                                                    \
-        if ((param) == (value)) {                           \
-            ICunitSaveErr(__LINE__, (iiUINT32)retcode);     \
-            return;                                         \
-        }                                                   \
-    } while (0)
-#define ICUNIT_ASSERT_EQUAL(param, value, retcode)      \
-    do {                                                \
-        if ((param) != (value)) {                       \
-            ICunitSaveErr(__LINE__, (iiUINT32)retcode); \
-            return 1;                                   \
-        }                                               \
-    } while (0)
+#define ICUNIT_ASSERT_NOT_EQUAL_VOID(param, value, retcode) do { \
+    if ((param) == (value)) {                           \
+        ICunitSaveErr(__LINE__, (TUINTPTR)(retcode));   \
+        return;                                         \
+    }                                                   \
+} while (0)
+#define ICUNIT_ASSERT_EQUAL(param, value, retcode) do { \
+    if ((param) != (value)) {                         \
+        ICunitSaveErr(__LINE__, (TUINTPTR)(retcode)); \
+        return 1;                                     \
+    }                                                 \
+} while (0)
 
-#define ICUNIT_ASSERT_NOT_EQUAL(param, value, retcode)  \
-    do {                                                \
-        if ((param) == (value)) {                       \
-            ICunitSaveErr(__LINE__, (iiUINT32)retcode); \
-            return 1;                                   \
-        }                                               \
-    } while (0)
+#define ICUNIT_ASSERT_NOT_EQUAL(param, value, retcode) do { \
+    if ((param) == (value)) {                         \
+        ICunitSaveErr(__LINE__, (TUINTPTR)(retcode)); \
+        return 1;                                     \
+    }                                                 \
+} while (0)
 
-#define ICUNIT_ASSERT_WITHIN_EQUAL(param, value1, value2, retcode) \
-    do {                                                           \
-        if ((param) < (value1) || (param) > (value2)) {            \
-            ICunitSaveErr(__LINE__, (iiUINT32)retcode);            \
-            return 1;                                              \
-        }                                                          \
-    } while (0)
+#define ICUNIT_ASSERT_WITHIN_EQUAL(param, value1, value2, retcode) do { \
+    if ((param) < (value1) || (param) > (value2)) {            \
+        ICunitSaveErr(__LINE__, (TUINTPTR)(retcode));          \
+        return 1;                                              \
+    }                                                          \
+} while (0)
 
-#define ICUNIT_ASSERT_WITHIN_EQUAL_VOID(param, value1, value2, retcode) \
-    do {                                                                \
-        if ((param) < (value1) || (param) > (value2)) {                 \
-            ICunitSaveErr(__LINE__, (iiUINT32)retcode);                 \
-            return;                                                     \
-        }                                                               \
-    } while (0)
+#define ICUNIT_ASSERT_WITHIN_EQUAL_VOID(param, value1, value2, retcode) do { \
+    if ((param) < (value1) || (param) > (value2)) {                 \
+        ICunitSaveErr(__LINE__, (TUINTPTR)(retcode));               \
+        return;                                                     \
+    }                                                               \
+} while (0)
 
-#define ICUNIT_ASSERT_EQUAL_VOID(param, value, retcode) \
-    do {                                                \
-        if ((param) != (value)) {                       \
-            ICunitSaveErr(__LINE__, (iiUINT32)retcode); \
-            return;                                     \
-        }                                               \
-    } while (0)
+#define ICUNIT_ASSERT_EQUAL_VOID(param, value, retcode) do { \
+    if ((param) != (value)) {                         \
+        ICunitSaveErr(__LINE__, (TUINTPTR)(retcode)); \
+        return;                                       \
+    }                                                 \
+} while (0)
 
-#define ICUNIT_ASSERT_SIZE_STRING_EQUAL(str1, str2, strsize, retcode) \
-    do {                                                              \
-        if (strncmp((str1), (str2), (strsize)) != 0) {                \
-            ICunitSaveErr(__LINE__, (iiUINT32)retcode);               \
-            return 1;                                                 \
-        }                                                             \
-    } while (0)
+#define ICUNIT_ASSERT_SIZE_STRING_EQUAL(str1, str2, strsize, retcode) do { \
+    if (strncmp((str1), (str2), (strsize)) != 0) {                \
+        ICunitSaveErr(__LINE__, (TUINTPTR)(retcode));             \
+        return 1;                                                 \
+    }                                                             \
+} while (0)
 
-#define ICUNIT_ASSERT_STRING_EQUAL(str1, str2, retcode) \
-    do {                                                \
-        if (strcmp(str1, str2) != 0) {                  \
-            ICunitSaveErr(__LINE__, (iiUINT32)retcode); \
-            return 1;                                   \
-        }                                               \
-    } while (0)
+#define ICUNIT_ASSERT_STRING_EQUAL(str1, str2, retcode) do { \
+    if (strcmp((str1), (str2)) != 0) {                \
+        ICunitSaveErr(__LINE__, (TUINTPTR)(retcode)); \
+        return 1;                                     \
+    }                                                 \
+} while (0)
 
-#define ICUNIT_ASSERT_STRING_EQUAL_VOID(str1, str2, retcode)       \
-    do {                                                           \
-        if (strcmp((const char *)str1, (const char *)str2) != 0) { \
-            ICunitSaveErr(__LINE__, (iiUINT32)retcode);            \
-            return;                                                \
-        }                                                          \
-    } while (0)
+#define ICUNIT_ASSERT_STRING_EQUAL_VOID(str1, str2, retcode) do {  \
+    if (strcmp((const char *)(str1), (const char *)(str2)) != 0) { \
+        ICunitSaveErr(__LINE__, (TUINTPTR)(retcode));              \
+        return;                                                    \
+    }                                                              \
+} while (0)
 
-#define ICUNIT_ASSERT_STRING_NOT_EQUAL(str1, str2, retcode) \
-    do {                                                    \
-        if (strcmp(str1, str2) == 0) {                      \
-            ICunitSaveErr(__LINE__, (iiUINT32)retcode);     \
-            return 1;                                       \
-        }                                                   \
-    } while (0)
+#define ICUNIT_ASSERT_STRING_NOT_EQUAL(str1, str2, retcode) do { \
+    if (strcmp((str1), (str2)) == 0) {                  \
+        ICunitSaveErr(__LINE__, (TUINTPTR)(retcode));   \
+        return 1;                                       \
+    }                                                   \
+} while (0)
 
-#define ICUNIT_GOTO_EQUAL(param, value, retcode, label) \
-    do {                                                \
-        if ((param) != (value)) {                       \
-            ICunitSaveErr(__LINE__, (iiUINT32)retcode); \
-            goto label;                                 \
-        }                                               \
-    } while (0)
+#define ICUNIT_GOTO_EQUAL(param, value, retcode, label) do { \
+    if ((param) != (value)) {                         \
+        ICunitSaveErr(__LINE__, (TUINTPTR)(retcode)); \
+        goto label;                                   \
+    }                                                 \
+} while (0)
 
-#define ICUNIT_GOTO_NOT_EQUAL(param, value, retcode, label) \
-    do {                                                    \
-        if ((param) == (value)) {                           \
-            ICunitSaveErr(__LINE__, (iiUINT32)retcode);     \
-            goto label;                                     \
-        }                                                   \
-    } while (0)
+#define ICUNIT_GOTO_NOT_EQUAL(param, value, retcode, label) do { \
+    if ((param) == (value)) {                           \
+        ICunitSaveErr(__LINE__, (TUINTPTR)(retcode));   \
+        goto label;                                     \
+    }                                                   \
+} while (0)
 
-#define ICUNIT_GOTO_STRING_EQUAL(str1, str2, retcode, label) \
-    do {                                                     \
-        if (strcmp(str1, str2) != 0) {                       \
-            ICunitSaveErr(__LINE__, (iiUINT32)retcode);      \
-            goto label;                                      \
-        }                                                    \
-    } while (0)
+#define ICUNIT_GOTO_STRING_EQUAL(str1, str2, retcode, label) do { \
+    if (strcmp((str1), (str2)) != 0) {                   \
+        ICunitSaveErr(__LINE__, (TUINTPTR)(retcode));    \
+        goto label;                                      \
+    }                                                    \
+} while (0)
 
-#define ICUNIT_GOTO_STRING_NOT_EQUAL(str1, str2, retcode, label) \
-    do {                                                         \
-        if (strcmp(str1, str2) == 0) {                           \
-            ICunitSaveErr(__LINE__, (iiUINT32)retcode);          \
-            goto label;                                          \
-        }                                                        \
-    } while (0)
+#define ICUNIT_GOTO_STRING_NOT_EQUAL(str1, str2, retcode, label) do { \
+    if (strcmp((str1), (str2)) == 0) {                       \
+        ICunitSaveErr(__LINE__, (TUINTPTR)(retcode));        \
+        goto label;                                          \
+    }                                                        \
+} while (0)
 
-extern iUINT32 iCunitAddSuit_F(iCHAR *suitName, iCHAR *pfileName);
-#define iCunitAddSuit(suitName) iCunitAddSuit_F(suitName, __FILE__)
+extern TUINT32 ICunitAddCase(ICuintCaseStatus *arg);
+extern TUINT32 ICunitRun(void);
+extern TUINT32 ICunitInit(void);
+extern TUINT32 iCunitPrintReport(void);
 
-extern iUINT32 ICunitAddCase(iCHAR *caseName, CASE_FUNCTION caseFunc, iUINT16 testcaseLayer, iUINT16 testcaseModule,
-    iUINT16 testcaseLevel, iUINT16 testcaseType);
+#define TEST_ADD_CASE(name, casefunc, layer, module, level, type) do {          \
+    ICuintCaseStatus arg = { name, casefunc, layer, module, level, type, 0, 0}; \
+    TUINT32 ret = ICunitAddCase(&arg);                                          \
+    ICUNIT_ASSERT_EQUAL_VOID(ret, ICUNIT_SUCCESS, ret);                         \
+} while (0)
 
-extern iUINT32 ICunitRun(void);
-extern iUINT32 ICunitInit(void);
-extern iUINT32 iCunitPrintReport(void);
+#define TEST_RUN_SUITE() do {                                        \
+    TUINT32 ret = ICunitRun();                                       \
+    ICUNIT_ASSERT_NOT_EQUAL_VOID(ret, ICUNIT_UNINIT, ICUNIT_UNINIT); \
+} while (0)
 
-
-#define TEST_ADD_CASE(name, casefunc, testcase_layer, testcase_module, testcase_level, testcase_type)         \
-    do {                                                                                                      \
-        iUINT32 uwRet = 1;                                                                                    \
-        uwRet = ICunitAddCase(name, (CASE_FUNCTION)casefunc, testcase_layer, testcase_module, testcase_level, \
-            testcase_type);                                                                                   \
-        ICUNIT_ASSERT_EQUAL_VOID(uwRet, ICUNIT_SUCCESS, uwRet);                                               \
-    } while (0)
-
-#define TEST_RUN_SUITE()                                                   \
-    do {                                                                   \
-        UINT32 uiRet;                                                      \
-        uiRet = ICunitRun();                                               \
-        ICUNIT_ASSERT_NOT_EQUAL_VOID(uiRet, ICUNIT_UNINIT, ICUNIT_UNINIT); \
-    } while (0)
-
-#ifdef __cplusplus
-#if __cplusplus
-}
-#endif /* __cplusplus */
-#endif /* __cplusplus */
-
+extern void ICunitTestResultGet(TUINT32 *passResult, TUINT32 *failResult);
 #endif /* _UNI_ICUNIT_H */

@@ -1,8 +1,0 @@
-menu "Kernel Modules Configuration"
-source "config/core/kernel/irq/Kconfig"
-source "config/core/kernel/kexc/Kconfig"
-source "config/core/kernel/sys/Kconfig"
-source "config/core/kernel/task/Kconfig"
-source "config/core/kernel/tick/Kconfig"
-source "config/core/kernel/timer/Kconfig"
-endmenu

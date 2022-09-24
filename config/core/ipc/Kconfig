@@ -1,6 +1,0 @@
-menu "IPC Modules Configuration"
-source "config/core/ipc/event/Kconfig"
-source "config/core/ipc/queue/Kconfig"
-source "config/core/ipc/sem/Kconfig"
-
-endmenu

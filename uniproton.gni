@@ -1,58 +1,61 @@
-# Copyright (c) 2022-2022 Huawei Device Co., Ltd. All rights reserved.
+# Copyright (c) 2022-2022 Huawei Technologies Co., Ltd. All rights reserved.
 #
-# Redistribution and use in source and binary forms, with or without modification,
-# are permitted provided that the following conditions are met:
-#
-# 1. Redistributions of source code must retain the above copyright notice, this list of
-#    conditions and the following disclaimer.
-#
-# 2. Redistributions in binary form must reproduce the above copyright notice, this list
-#    of conditions and the following disclaimer in the documentation and/or other materials
-#    provided with the distribution.
-#
-# 3. Neither the name of the copyright holder nor the names of its contributors may be used
-#    to endorse or promote products derived from this software without specific prior written
-#    permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-# PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
-# CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-# EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
-# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
-# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
-# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
+# UniProton is licensed under Mulan PSL v2.
+# You can use this software according to the terms and conditions of the Mulan PSL v2.
+# You may obtain a copy of Mulan PSL v2 at:
+#          http://license.coscl.org.cn/MulanPSL2
+# THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
+# EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
+# MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+# See the Mulan PSL v2 for more details.
+# Create: 2022-09-21
+# Description: UniProton内核配置开关编译脚本。
 import("//build/lite/config/component/lite_component.gni")
 
-MENUCONFIG_H = rebase_path("$root_out_dir/config.h")
+product_config_file = "${ohos_build_type}.config"
+product_config_file = rebase_path(product_config_file, "", "$product_path/kernel_configs")
+print("product_config_file:", product_config_file)
 
-os_config_file = "${ohos_build_type}.config"
-
-os_config_file =
-    rebase_path(os_config_file, "", "$product_path/kernel_configs")
-print("os_config_file:", os_config_file)
-
+OS_MENUCONFIG_H = rebase_path("$root_out_dir/os_config.h")
 exec_script("//build/lite/run_shell_cmd.py",
             [ "env" + " CONFIG_=" + " KCONFIG_CONFIG_HEADER='y=true'" +
-                  " KCONFIG_CONFIG=$os_config_file" +
+                  " KCONFIG_CONFIG=$product_config_file" +
+                  " BOARD_COMPANY=$device_company" +
+                  " DEVICE_PATH=$device_path" + " srctree=" + rebase_path("./UniProton/src") +
+                  " genconfig" + " --header-path $OS_MENUCONFIG_H" +
+                  " --file-list kconfig_files.txt" +
+                  " --env-list kconfig_env.txt" + " --config-out os_config.gni" ],
+            "",
+            [ product_config_file ])
+
+MENUCONFIG_H = rebase_path("$root_out_dir/config.h")
+exec_script("//build/lite/run_shell_cmd.py",
+            [ "env" + " CONFIG_=" + " KCONFIG_CONFIG_HEADER='y=true'" +
                   " BOARD_COMPANY=$device_company" +
                   " DEVICE_PATH=$device_path" + " srctree=" + rebase_path(".") +
                   " genconfig" + " --header-path $MENUCONFIG_H" +
                   " --file-list kconfig_files.txt" +
                   " --env-list kconfig_env.txt" + " --config-out config.gni" ],
             "",
-            [ os_config_file ])
+            [ product_config_file ])
 
+import("$root_out_dir/os_config.gni")
 import("$root_out_dir/config.gni")
 
 OSTOPDIR = "//kernel/uniproton/UniProton/src"
 OSTHIRDPARTY = "//third_party"
 
-kernel_base_sources = [
+KERNEL_BASE_INCLUDE_DIRS = [
+  "$OSTOPDIR/arch/include",
+  "$OSTOPDIR/config",
+  "$OSTOPDIR/core/ipc/include",
+  "$OSTOPDIR/core/kernel/include",
+  "$OSTOPDIR/mem/include",
+  "$OSTOPDIR/om/include",
+  "$OSTOPDIR/utility/lib/include",
+]
+
+KERNEL_BASE_SOURCES = [
   "$OSTOPDIR/config/prt_config.c",
   "$OSTOPDIR/core/kernel/irq/prt_irq.c",
   "$OSTOPDIR/core/kernel/kexc/prt_kexc.c",
@@ -79,41 +82,41 @@ kernel_base_sources = [
   "$OSTOPDIR/core/kernel/timer/prt_timer_minor.c",
 ]
 
-kernel_swtmr_sources = [
+KERNEL_SWTMR_SOURCES = [
   "$OSTOPDIR/core/kernel/timer/swtmr/prt_swtmr.c",
   "$OSTOPDIR/core/kernel/timer/swtmr/prt_swtmr_init.c",
   "$OSTOPDIR/core/kernel/timer/swtmr/prt_swtmr_minor.c",
 ]
 
-kernel_ipc_event_sources = [
+KERNEL_IPC_EVENT_SOURCES = [
   "$OSTOPDIR/core/ipc/event/prt_event.c",
 ]
 
-kernel_ipc_queue_sources = [
+KERNEL_IPC_QUEUE_SOURCES = [
   "$OSTOPDIR/core/ipc/queue/prt_queue.c",
   "$OSTOPDIR/core/ipc/queue/prt_queue_del.c",
   "$OSTOPDIR/core/ipc/queue/prt_queue_init.c",
   "$OSTOPDIR/core/ipc/queue/prt_queue_minor.c",
 ]
 
-kernel_ipc_sem_sources = [
+KERNEL_IPC_SEM_SOURCES = [
   "$OSTOPDIR/core/ipc/sem/prt_sem.c",
   "$OSTOPDIR/core/ipc/sem/prt_sem_init.c",
   "$OSTOPDIR/core/ipc/sem/prt_sem_minor.c",
 ]
 
-kernel_mem_sources = [
+KERNEL_MEM_SOURCES = [
   "$OSTOPDIR/mem/prt_mem.c",
   "$OSTOPDIR/mem/fsc/prt_fscmem.c"
 ]
 
-kernel_om_sources = [
+KERNEL_OM_SOURCES = [
   "$OSTOPDIR/om/err/prt_err.c",
   "$OSTOPDIR/om/err/prt_err_init.c",
   "$OSTOPDIR/om/hook/prt_hook_init.c",
 ]
 
-kernel_om_cpup_sources = [
+KERNEL_OM_CPUP_SOURCES = [
   "$OSTOPDIR/om/cpup/prt_cpup.c",
   "$OSTOPDIR/om/cpup/prt_cpup_minor.c",
   "$OSTOPDIR/om/cpup/prt_cpup_thread.c",
@@ -122,16 +125,46 @@ kernel_om_cpup_sources = [
   "$OSTOPDIR/om/cpup/prt_cpup_warn.c",
 ]
 
-kernel_security_sources = [
+KERNEL_SECURITY_SOURCES = [
   "$OSTOPDIR/security/rnd/prt_rnd_set.c"
 ]
 
-kernel_utility_sources = [
+KERNEL_UTILITY_SOURCES = [
   "$OSTOPDIR/utility/lib/prt_lib_math64.c",
   "$OSTOPDIR/utility/lib/prt_lib_version.c"
 ]
 
-arch_cortex_m4_sources = [
+KERNEL_FS_INCLUDE_DIRS = [
+  "$OSTOPDIR/fs/porting",
+  "$OSTOPDIR/fs/vfs",
+  "$OSTOPDIR/fs/littlefs",
+]
+
+KERNEL_FS_SOURCES = [
+  "$OSTOPDIR/fs/fs.c",
+  "$OSTOPDIR/fs/vfs/vfs_files.c",
+  "$OSTOPDIR/fs/vfs/vfs_fs.c",
+  "$OSTOPDIR/fs/vfs/vfs_init.c",
+  "$OSTOPDIR/fs/vfs/vfs_maps.c",
+  "$OSTOPDIR/fs/vfs/vfs_mount.c",
+  "$OSTOPDIR/fs/vfs/vfs_partition.c",
+  "$OSTOPDIR/fs/littlefs/lfs_adapter.c",
+]
+
+KERNEL_LWIP_INCLUDE_DIRS = [
+  "$OSTOPDIR/net/lwip-2.1/include"
+]
+
+KERNEL_LWIP_SOURCES = [
+  "$OSTOPDIR/net/lwip-2.1/src/driverif.c",
+  "$OSTOPDIR/net/lwip-2.1/src/netdb.c",
+  "$OSTOPDIR/net/lwip-2.1/src/sockets.c",
+  "$OSTOPDIR/net/lwip-2.1/src/sys_arch.c",
+  "$OSTOPDIR/net/lwip-2.1/enhancement/src/fixme.c",
+  "$OSTOPDIR/net/lwip-2.1/enhancement/src/lwip_ifaddrs.c",
+]
+
+ARCH_ARMVM7_M_SOURCES = [
   "$OSTOPDIR/arch/cpu/armv7-m/common/boot/prt_hw_boot.c",
   "$OSTOPDIR/arch/cpu/armv7-m/common/exc/prt_exc.c",
   "$OSTOPDIR/arch/cpu/armv7-m/common/hwi/prt_hwi.c",
@@ -139,9 +172,20 @@ arch_cortex_m4_sources = [
   "$OSTOPDIR/arch/cpu/armv7-m/common/tick/prt_hw_tick.c",
   "$OSTOPDIR/arch/cpu/armv7-m/common/tick/prt_hw_tick_minor.c",
   "$OSTOPDIR/arch/cpu/armv7-m/common/prt_port.c",
+]
+
+ARCH_ARMVM7_M_INCLUDE_DIRS = [
+  "$OSTOPDIR/arch/cpu/armv7-m/common",
+]
+
+ARCH_CORTEX_M4_SOURCES = [
   "$OSTOPDIR/arch/cpu/armv7-m/cortex-m4/prt_dispatch.S",
   "$OSTOPDIR/arch/cpu/armv7-m/cortex-m4/prt_div64.c",
   "$OSTOPDIR/arch/cpu/armv7-m/cortex-m4/prt_hw.S",
   "$OSTOPDIR/arch/cpu/armv7-m/cortex-m4/prt_hw_exc.S",
   "$OSTOPDIR/arch/cpu/armv7-m/cortex-m4/prt_vector.S",
+]
+
+ARCH_CORTEX_M4_INCLUDE_DIRS = [
+  "$OSTOPDIR/arch/cpu/armv7-m/cortex-m4",
 ]
