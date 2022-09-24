@@ -1,32 +1,18 @@
-# Copyright (c) 2022-2022 Huawei Device Co., Ltd. All rights reserved.
+# Copyright (c) 2022-2022 Huawei Technologies Co., Ltd. All rights reserved.
 #
-# Redistribution and use in source and binary forms, with or without modification,
-# are permitted provided that the following conditions are met:
-#
-# 1. Redistributions of source code must retain the above copyright notice, this list of
-#    conditions and the following disclaimer.
-#
-# 2. Redistributions in binary form must reproduce the above copyright notice, this list
-#    of conditions and the following disclaimer in the documentation and/or other materials
-#    provided with the distribution.
-#
-# 3. Neither the name of the copyright holder nor the names of its contributors may be used
-#    to endorse or promote products derived from this software without specific prior written
-#    permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-# PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
-# CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-# EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
-# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
-# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
-# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
+# UniProton is licensed under Mulan PSL v2.
+# You can use this software according to the terms and conditions of the Mulan PSL v2.
+# You may obtain a copy of Mulan PSL v2 at:
+#          http://license.coscl.org.cn/MulanPSL2
+# THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
+# EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
+# MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+# See the Mulan PSL v2 for more details.
+# Create: 2022-09-21
+# Description: UniProton内核编译脚本。
 import("//build/lite/config/component/lite_component.gni")
+import("//third_party/lwip/lwip.gni")
+import("//third_party/littlefs/littlefs.gni")
 import("uniproton.gni")
 
 declare_args() {
@@ -36,35 +22,27 @@ declare_args() {
 }
 
 arch_cflags = []
-if (defined(ARCH_CPU)) {
-  arch_cflags += [ "-mcpu=$ARCH_CPU" ]
-}
-if (defined(ARCH_FPU) && defined(ARCH_FLOAT)) {
-  arch_cflags += [ "-mfloat-abi=$ARCH_FLOAT" ]
-  arch_cflags += [ "-mfpu=$ARCH_FPU" ]
-}
-if (defined(CONFIG_HARDWARE_PLATFORM)) {
-  arch_cflags += [ "-DOS_HARDWARE_PLATFORM=$CONFIG_HARDWARE_PLATFORM" ]
-}
-
 cc = "$ohos_current_cc_command " + string_join(" ", arch_cflags)
+
+if (defined(OS_SUPPORT_KERNEL_TEST)) {
+  HAVE_KERNEL_TEST = true
+}
+if (HAVE_KERNEL_TEST == true) {
+  arch_cflags += [ "-DOS_SUPPORT_KERNEL_TEST=1" ]
+}
 
 config("arch_config") {
   cflags = arch_cflags
   ldflags = cflags
-  if (defined(THUMB)) {
-    cflags += [
-      "-mthumb",
-      "-Wa,-mimplicit-it=thumb",
-    ]
-  }
   asmflags = cflags
 }
 
 config("kconfig_config") {
   cflags = [
     "-imacros",
-    "$MENUCONFIG_H",
+    "$OS_MENUCONFIG_H",
+    "-imacros",
+    "$MENUCONFIG_H"
   ]
   asmflags = cflags
   cflags_cc = cflags
@@ -72,23 +50,17 @@ config("kconfig_config") {
 
 config("kernel_config") {
   include_dirs = [
-    "$OSTOPDIR/arch/include",
-    "$OSTOPDIR/config",
-    "$OSTOPDIR/core/ipc/include",
-    "$OSTOPDIR/core/kernel/include",
-    "$OSTOPDIR/mem/include",
-    "$OSTOPDIR/om/include",
-    "$OSTOPDIR/utility/lib/include",
     "$OSTOPDIR/include/uapi",
-    "$OSTOPDIR/arch/cpu/armv7-m/common",
-    "$OSTOPDIR/arch/cpu/armv7-m/cortex-m4",
     "//kernel/uniproton/config",
     "//third_party/bounds_checking_function/include",
   ]
+  if (defined(OS_ARCH_ARMV7_M)) {
+    include_dirs += ARCH_ARMVM7_M_INCLUDE_DIRS
+  }
 }
 
 config("strong_waring_flag") {
-  cflags = [
+  base_flags = [
     "-Wunused",
     "-Wredundant-decls",
     "-Wfloat-conversion",
@@ -96,10 +68,8 @@ config("strong_waring_flag") {
     "-Wunused-macros",
     "-Wswitch-default",
     "-Wshift-overflow=2",
-    "-Wnested-externs",
     "-Wmissing-include-dirs",
     "-Wlogical-op",
-    "-Wjump-misses-init",
     "-Wformat-security",
     "-Wvla",
     "-Wframe-larger-than=4096",
@@ -114,14 +84,19 @@ config("strong_waring_flag") {
     "-Wtype-limits",
     "-Wcast-qual",
     "-Wundef",
-    "-Wbad-function-cast",
-    "-Wold-style-definition",
     "-Wpacked",
-    "-Wstrict-prototypes",
     "-Wstack-usage=2048",
   ]
 
-  cflags_cc = cflags
+  cflags = base_flags
+  cflags += [
+    "-Wnested-externs",
+    "-Wjump-misses-init",
+    "-Wbad-function-cast",
+    "-Wold-style-definition",
+    "-Wstrict-prototypes",
+  ]
+  cflags_cc = base_flags
 }
 
 config("warn_config") {
@@ -204,27 +179,43 @@ config("os_config") {
 }
 
 static_library("libkernel") {
-  sources = kernel_base_sources
+  include_dirs = KERNEL_BASE_INCLUDE_DIRS
+  sources = KERNEL_BASE_SOURCES
+
   if (defined(OS_OPTION_EVENT)) {
-    sources += kernel_ipc_event_sources
+    sources += KERNEL_IPC_EVENT_SOURCES
   }
   if (defined(OS_OPTION_QUEUE)) {
-    sources += kernel_ipc_queue_sources
+    sources += KERNEL_IPC_QUEUE_SOURCES
   }
   if (defined(INTERNAL_OS_SWTMR)) {
-    sources += kernel_swtmr_sources
+    sources += KERNEL_SWTMR_SOURCES
   }
-  sources += kernel_ipc_sem_sources
-  sources += kernel_mem_sources
-  sources += kernel_om_sources
+  sources += KERNEL_IPC_SEM_SOURCES
+  sources += KERNEL_MEM_SOURCES
+  sources += KERNEL_OM_SOURCES
   if (defined(OS_OPTION_CPUP)) {
-    sources += kernel_om_cpup_sources
+    sources += KERNEL_OM_CPUP_SOURCES
   }
-  sources += kernel_security_sources
-  sources += kernel_utility_sources
+  sources += KERNEL_SECURITY_SOURCES
+  sources += KERNEL_UTILITY_SOURCES
 
-  if ("$board_cpu" == "cortex-m4") {
-    sources += arch_cortex_m4_sources
+  if (defined(OS_SUPPORT_FS)) {
+    sources += KERNEL_FS_SOURCES + LITTLEFS_SRC_FILES_FOR_KERNEL_MODULE
+    include_dirs += KERNEL_FS_INCLUDE_DIRS + LITTLEFS_INCLUDE_DIRS
+  }
+
+  if (defined(OS_SUPPORT_NET)) {
+    sources += KERNEL_LWIP_SOURCES + LWIPNOAPPSFILES
+    include_dirs += KERNEL_LWIP_INCLUDE_DIRS + LWIP_INCLUDE_DIRS
+  }
+
+  if (defined(OS_ARCH_ARMV7_M)) {
+    sources += ARCH_ARMVM7_M_SOURCES
+    if ("$board_cpu" == "cortex-m4") {
+      sources += ARCH_CORTEX_M4_SOURCES
+      include_dirs += ARCH_CORTEX_M4_INCLUDE_DIRS
+    }
   }
 
   configs += [ ":os_config" ]
@@ -236,7 +227,6 @@ static_library("libkernel") {
 group("kernel") {
   deps = [
     ":libkernel",
-    "components",
   ]
 
   if (HAVE_KERNEL_TEST) {
@@ -255,7 +245,7 @@ executable("uniproton") {
 
   output_dir = target_out_dir
 
-  deps = [ ":kernel" ]
+  deps = [ "//build/lite:ohos" ]
 
   if (HAVE_DEVICE_SDK) {
     deps += [

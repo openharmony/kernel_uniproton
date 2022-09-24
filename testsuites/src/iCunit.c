@@ -1,149 +1,147 @@
 /*
- * Copyright (c) 2022-2022 Huawei Device Co., Ltd. All rights reserved.
+ * Copyright (c) 2022-2022 Huawei Technologies Co., Ltd. All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this list of
- * conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list
- * of conditions and the following disclaimer in the documentation and/or other materials
- * provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its contributors may be used
- * to endorse or promote products derived from this software without specific prior written
- * permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * UniProton is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *          http://license.coscl.org.cn/MulanPSL2
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
+ * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
+ * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ * Create: 2022-09-21
+ * Description: UniProton基础测试框架。
  */
-
 #include "iCunit.h"
-#include "iCunit.inc"
 #include "string.h"
 #include "osTest.h"
 #include "iCunit_config.h"
 
 #include <stdio.h>
 
+static ICuintCaseStatus g_iCunitCaseArray[ICUNIT_CASE_SIZE];
+static TUINT32 g_iCunitInitSuccess = 0x0000FFFF;
+static TUINT32 g_iCunitCaseFailedCnt = 0;
+static TUINT32 g_iCunitErrLogAddCase = 0;
 
-extern U32 g_failResult;
-extern U32 g_passResult;
-void ICunitSaveErr(iiUINT32 line, iiUINT32 retCode)
-{
-    iCunit_errLineNo = (iCunit_errLineNo == 0) ? line : iCunit_errLineNo;
-    iCunit_errCode = (iCunit_errCode == 0) ? (iiUINT32)retCode : iCunit_errCode;
-}
+static TUINT16 g_iCunitErrLineNo;
+static TUINTPTR g_iCunitErrCode;
 
-iUINT32 ICunitAddCase(iCHAR *caseName, CASE_FUNCTION caseFunc, iUINT16 testcaseLayer, iUINT16 testcaseModule,
-    iUINT16 testcaseLevel, iUINT16 testcaseType)
-{
-    iUINT16 idx;
+static TUINT32 g_failResult;
+static TUINT32 g_passResult;
 
-    if (iCunit_Init_Success) {
-        return (iUINT32)ICUNIT_UNINIT;
-    }
-
-    idx = 0;
-    if (idx == ICUNIT_CASE_SIZE) {
-        iCunit_ErrLog_AddCase++;
-        return (iUINT32)ICUNIT_CASE_FULL;
-    }
-
-    iCunit_CaseArray[idx].pcCaseID = caseName;
-    iCunit_CaseArray[idx].pstCaseFunc = caseFunc;
-    iCunit_CaseArray[idx].testcase_layer = testcaseLayer;
-    iCunit_CaseArray[idx].testcase_module = testcaseModule;
-    iCunit_CaseArray[idx].testcase_level = testcaseLevel;
-    iCunit_CaseArray[idx].testcase_type = testcaseType;
-
-    ICunitRun();
-    return (iUINT32)ICUNIT_SUCCESS;
-}
-
-iUINT32 ICunitInit()
-{
-    iCunit_Init_Success = 0x0000;
-    iCunit_Case_Cnt = 0x0000;
-
-    iCunit_Case_FailedCnt = 0;
-
-    iCunit_ErrLog_AddCase = 0;
-
-    (void)memset_s(iCunit_CaseArray, sizeof(iCunit_CaseArray), 0, sizeof(iCunit_CaseArray));
-    return (iUINT32)ICUNIT_SUCCESS;
-}
-
-char *g_strLayer[] = {
+static char *g_strLayer[] = {
     "OS", "CMSIS", "POSIX", "LIB", "VFS", "EXTEND",
     "PARTITION", "CPP", "SHELL", "LINUX", "USB", "DRIVERFRAME", "CONTEXTHUB"
 };
-char *g_strModule[] = {
-    "TASK", "MEM", "SEM", "MUX", "EVENT", "QUE", "SWTMR", "HWI", "ATO", "CPUP", "SCATTER", "RUNSTOP", "TIMER", "MMU", "TICKLESS",
-    "ROBIN", "LIBC", "WAIT", "VFAT", "YAFFS", "JFFS", "RAMFS", "NFS", "PROC", "FS",
+static char *g_strModule[] = {
+    "TASK", "MEM", "SEM", "MUX", "EVENT", "QUE", "SWTMR", "HWI", "ATO", "CPUP", "SCATTER", "RUNSTOP", "TIMER",
+    "MMU", "TICKLESS", "ROBIN", "LIBC", "WAIT", "VFAT", "YAFFS", "JFFS", "RAMFS", "NFS", "PROC", "FS",
     "PTHREAD", "COMP", "HWI_HALFBOTTOM", "WORKQ", "WAKELOCK", "TIMES",
-    "LIBM", "SUPPORT", "STL", "MAIL", "MSG", "CP", "SIGNAL", "SCHED", "MTDCHAR", "TIME", "WRITE", "READ", "DYNLOAD", "REGISTER", "SR", "UNAME", "ERR"
+    "LIBM", "SUPPORT", "STL", "MAIL", "MSG", "CP", "SIGNAL", "SCHED", "MTDCHAR", "TIME", "WRITE", "READ",
+    "DYNLOAD", "REGISTER", "SR", "UNAME", "ERR"
 };
-char *g_strLevel[] = {
+static char *g_strLevel[] = {
     "LEVEL0", "LEVEL1", "LEVEL2", "LEVEL3"
 };
-char *g_strType[] = {
+static char *g_strType[] = {
     "FUNCTION", "PRESSURE", "PERFORMANCE"
 };
 
-iUINT32 ICunitRunF()
+void ICunitSaveErr(TUINTPTR line, TUINTPTR retCode)
 {
-    iUINT32 idx, idx1;
-    ICUNIT_CASE_S *psubCaseArray;
-    iUINT32 caseRet;
+    g_iCunitErrLineNo = (g_iCunitErrLineNo == 0) ? line : g_iCunitErrLineNo;
+    g_iCunitErrCode = (g_iCunitErrCode == 0) ? (TUINTPTR)retCode : g_iCunitErrCode;
+}
 
-    psubCaseArray = iCunit_CaseArray;
+TUINT32 ICunitAddCase(ICuintCaseStatus *arg)
+{
+    TUINT16 idx = 0;
+
+    if (g_iCunitInitSuccess) {
+        return (TUINT32)ICUNIT_UNINIT;
+    }
+
+    if (idx == ICUNIT_CASE_SIZE) {
+        g_iCunitErrLogAddCase++;
+        return (TUINT32)ICUNIT_CASE_FULL;
+    }
+
+    g_iCunitCaseArray[idx].pcCaseID = arg->pcCaseID;
+    g_iCunitCaseArray[idx].caseFunc = arg->caseFunc;
+    g_iCunitCaseArray[idx].testcaseLayer = arg->testcaseLayer;
+    g_iCunitCaseArray[idx].testcaseModule = arg->testcaseModule;
+    g_iCunitCaseArray[idx].testcaseLevel = arg->testcaseLevel;
+    g_iCunitCaseArray[idx].testcaseType = arg->testcaseType;
+
+    ICunitRun();
+    return (TUINT32)ICUNIT_SUCCESS;
+}
+
+TUINT32 ICunitInit()
+{
+    g_iCunitInitSuccess = 0x0000;
+
+    g_iCunitCaseFailedCnt = 0;
+
+    g_iCunitErrLogAddCase = 0;
+
+    (void)memset_s(g_iCunitCaseArray, sizeof(g_iCunitCaseArray), 0, sizeof(g_iCunitCaseArray));
+    return (TUINT32)ICUNIT_SUCCESS;
+}
+
+TUINT32 ICunitRunF()
+{
+    TUINT32 idx, idx1;
+    TUINT32 caseRet;
+
+    ICuintCaseStatus *caseArray = g_iCunitCaseArray;
     idx1 = 1;
 
-    for (idx = 0; idx < idx1; idx++, psubCaseArray++) {
-        iCunit_errLineNo = 0;
-        iCunit_errCode = 0;
+    for (idx = 0; idx < idx1; idx++, caseArray++) {
+        g_iCunitErrLineNo = 0;
+        g_iCunitErrCode = 0;
 
-        caseRet = psubCaseArray->pstCaseFunc();
-        psubCaseArray->errLine = iCunit_errLineNo;
-        psubCaseArray->retCode = (0 == iCunit_errLineNo) ? (caseRet) : (iCunit_errCode);
+        caseRet = caseArray->caseFunc();
+        caseArray->errLine = g_iCunitErrLineNo;
+        caseArray->retCode = (g_iCunitErrLineNo == 0) ? (caseRet) : (g_iCunitErrCode);
 
-        if (0 == iCunit_errLineNo && 0 == caseRet) {
+        if ((g_iCunitErrLineNo == 0) && (caseRet == 0)) {
             g_passResult++;
-            PRINTF("  [Passed]-%s-%s-%s-%s-%s\n", psubCaseArray->pcCaseID, g_strLayer[psubCaseArray->testcase_layer],
-                g_strModule[psubCaseArray->testcase_module], g_strLevel[psubCaseArray->testcase_level],
-                g_strType[psubCaseArray->testcase_type]);
+            PRINTF("  [Passed]-%s-%s-%s-%s-%s\n", caseArray->pcCaseID, g_strLayer[caseArray->testcaseLayer],
+                g_strModule[caseArray->testcaseModule], g_strLevel[caseArray->testcaseLevel],
+                g_strType[caseArray->testcaseType]);
         } else {
             g_failResult++;
-            iCunit_Case_FailedCnt++;
-            PRINTF("  [Failed]-%s-%s-%s-%s-%s-[Errline: %d RetCode:0x%lx]\n", psubCaseArray->pcCaseID,
-                g_strLayer[psubCaseArray->testcase_layer], g_strModule[psubCaseArray->testcase_module],
-                g_strLevel[psubCaseArray->testcase_level], g_strType[psubCaseArray->testcase_type],
-                psubCaseArray->errLine, psubCaseArray->retCode);
+            g_iCunitCaseFailedCnt++;
+            PRINTF("  [Failed]-%s-%s-%s-%s-%s-[Errline: %d RetCode:0x%lx]\n", caseArray->pcCaseID,
+                g_strLayer[caseArray->testcaseLayer], g_strModule[caseArray->testcaseModule],
+                g_strLevel[caseArray->testcaseLevel], g_strType[caseArray->testcaseType],
+                caseArray->errLine, caseArray->retCode);
         }
     }
 
-    return (iUINT32)ICUNIT_SUCCESS;
+    return (TUINT32)ICUNIT_SUCCESS;
 }
 
-iUINT32 ICunitRun()
+TUINT32 ICunitRun()
 {
-    if (iCunit_Init_Success) {
-        return (iUINT32)ICUNIT_UNINIT;
+    if (g_iCunitInitSuccess) {
+        return (TUINT32)ICUNIT_UNINIT;
     }
 
     ICunitRunF();
 
-    return (iUINT32)ICUNIT_SUCCESS;
+    return (TUINT32)ICUNIT_SUCCESS;
+}
+
+void ICunitTestResultGet(TUINT32 *passResult, TUINT32 *failResult)
+{
+    if (passResult != NULL) {
+        *passResult = g_passResult;
+    }
+    if (failResult != NULL) {
+        *failResult = g_failResult;
+    }
 }
 
