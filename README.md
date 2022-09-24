@@ -9,12 +9,7 @@ UniProton main purpose is for the upper business software provides a unified ope
 ```
 /kernel/uniproton
 ├── UniProton   # UniProton base kernel
-├── components  # Optional components
-│   ├── fs      # File systems
-│   └── net     # Networking functions
-├── config      # Kconfig
-└── kal         # Kernel abstraction layer
-    └── posix   # POSIX API support
+└── config      # Kernel module configuration
 ```
 
 ## Constraints

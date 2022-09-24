@@ -46,6 +46,7 @@
         },
         "build": {
             "sub_component": [
+                "//kernel/uniproton:kernel",
                 "//kernel/uniproton:build_kernel_image"
             ],
             "inner_kits": [],

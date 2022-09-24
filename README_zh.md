@@ -11,12 +11,7 @@ UniProton主要目的在于为上层业务软件提供一个统一的操作系�
 ```
 /kernel/uniproton
 ├── UniProton   # UniProton 基础内核
-├── components  # 可选组件
-│   ├── fs      # 文件系统
-│   └── net     # 网络
-├── config      # 内核Kconfig配置
-└── kal         # 内核抽象层
-    └── posix   # posix标准接口支持
+└── config      # 内核模块控制开关配置
 ```
 
 ## 约束

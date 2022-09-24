@@ -1,6 +1,0 @@
-menu "Core Modules Configuration"
-
-source "config/core/ipc/Kconfig"
-source "config/core/kernel/Kconfig"
-
-endmenu
