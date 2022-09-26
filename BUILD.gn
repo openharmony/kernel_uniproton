@@ -18,18 +18,10 @@ import("uniproton.gni")
 declare_args() {
   uniproton_name = "OHOS_Image"
   HAVE_DEVICE_SDK = true
-  HAVE_KERNEL_TEST = false
 }
 
 arch_cflags = []
 cc = "$ohos_current_cc_command " + string_join(" ", arch_cflags)
-
-if (defined(OS_SUPPORT_KERNEL_TEST)) {
-  HAVE_KERNEL_TEST = true
-}
-if (HAVE_KERNEL_TEST == true) {
-  arch_cflags += [ "-DOS_SUPPORT_KERNEL_TEST=1" ]
-}
 
 config("arch_config") {
   cflags = arch_cflags
@@ -40,8 +32,6 @@ config("arch_config") {
 config("kconfig_config") {
   cflags = [
     "-imacros",
-    "$OS_MENUCONFIG_H",
-    "-imacros",
     "$MENUCONFIG_H"
   ]
   asmflags = cflags
@@ -51,7 +41,6 @@ config("kconfig_config") {
 config("kernel_config") {
   include_dirs = [
     "$OSTOPDIR/include/uapi",
-    "//kernel/uniproton/config",
     "//third_party/bounds_checking_function/include",
   ]
   if (defined(OS_ARCH_ARMV7_M)) {
@@ -228,10 +217,6 @@ group("kernel") {
   deps = [
     ":libkernel",
   ]
-
-  if (HAVE_KERNEL_TEST) {
-    deps += [ "testsuites" ]
-  }
 }
 
 executable("uniproton") {
