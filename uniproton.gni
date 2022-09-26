@@ -16,33 +16,21 @@ product_config_file = "${ohos_build_type}.config"
 product_config_file = rebase_path(product_config_file, "", "$product_path/kernel_configs")
 print("product_config_file:", product_config_file)
 
-OS_MENUCONFIG_H = rebase_path("$root_out_dir/os_config.h")
+MENUCONFIG_H = rebase_path("$root_out_dir/config.h")
 exec_script("//build/lite/run_shell_cmd.py",
             [ "env" + " CONFIG_=" + " KCONFIG_CONFIG_HEADER='y=true'" +
                   " KCONFIG_CONFIG=$product_config_file" +
                   " BOARD_COMPANY=$device_company" +
-                  " DEVICE_PATH=$device_path" + " srctree=" + rebase_path("./UniProton/src") +
-                  " genconfig" + " --header-path $OS_MENUCONFIG_H" +
-                  " --file-list kconfig_files.txt" +
-                  " --env-list kconfig_env.txt" + " --config-out os_config.gni" ],
-            "",
-            [ product_config_file ])
-
-MENUCONFIG_H = rebase_path("$root_out_dir/config.h")
-exec_script("//build/lite/run_shell_cmd.py",
-            [ "env" + " CONFIG_=" + " KCONFIG_CONFIG_HEADER='y=true'" +
-                  " BOARD_COMPANY=$device_company" +
-                  " DEVICE_PATH=$device_path" + " srctree=" + rebase_path(".") +
+                  " DEVICE_PATH=$device_path" + " srctree=" + rebase_path("./src") +
                   " genconfig" + " --header-path $MENUCONFIG_H" +
                   " --file-list kconfig_files.txt" +
                   " --env-list kconfig_env.txt" + " --config-out config.gni" ],
             "",
             [ product_config_file ])
 
-import("$root_out_dir/os_config.gni")
 import("$root_out_dir/config.gni")
 
-OSTOPDIR = "//kernel/uniproton/UniProton/src"
+OSTOPDIR = "//kernel/uniproton/src"
 OSTHIRDPARTY = "//third_party"
 
 KERNEL_BASE_INCLUDE_DIRS = [
