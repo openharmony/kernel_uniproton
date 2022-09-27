@@ -10,6 +10,7 @@
 # See the Mulan PSL v2 for more details.
 # Create: 2022-09-21
 # Description: UniProton内核编译脚本。
+import("//build/ohos.gni")
 import("//build/lite/config/component/lite_component.gni")
 import("//third_party/lwip/lwip.gni")
 import("//third_party/littlefs/littlefs.gni")
@@ -167,6 +168,10 @@ config("os_config") {
   }
 }
 
+ohos_static_library("notice") {
+  license_file = "./NOTICE"
+}
+
 static_library("libkernel") {
   include_dirs = KERNEL_BASE_INCLUDE_DIRS
   sources = KERNEL_BASE_SOURCES
@@ -216,6 +221,7 @@ static_library("libkernel") {
 group("kernel") {
   deps = [
     ":libkernel",
+    ":notice"
   ]
 }
 
