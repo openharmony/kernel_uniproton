@@ -13,25 +13,120 @@
 import("//build/lite/config/component/lite_component.gni")
 
 product_config_file = "${ohos_build_type}.config"
-product_config_file = rebase_path(product_config_file, "", "$product_path/kernel_configs")
+product_config_file =
+    rebase_path(product_config_file, "", "$product_path/kernel_configs")
 print("product_config_file:", product_config_file)
 
 MENUCONFIG_H = rebase_path("$root_out_dir/config.h")
-exec_script("//build/lite/run_shell_cmd.py",
-            [ "env" + " CONFIG_=" + " KCONFIG_CONFIG_HEADER='y=true'" +
-                  " KCONFIG_CONFIG=$product_config_file" +
-                  " BOARD_COMPANY=$device_company" +
-                  " DEVICE_PATH=$device_path" + " srctree=" + rebase_path("./src") +
-                  " genconfig" + " --header-path $MENUCONFIG_H" +
-                  " --file-list kconfig_files.txt" +
-                  " --env-list kconfig_env.txt" + " --config-out config.gni" ],
-            "",
-            [ product_config_file ])
+exec_script(
+    "//build/lite/run_shell_cmd.py",
+    [ "env" + " CONFIG_=" + " KCONFIG_CONFIG_HEADER='y=true'" +
+          " KCONFIG_CONFIG=$product_config_file" +
+          " BOARD_COMPANY=$device_company" + " DEVICE_PATH=$device_path" +
+          " srctree=" + rebase_path("./src") + " genconfig" +
+          " --header-path $MENUCONFIG_H" + " --file-list kconfig_files.txt" +
+          " --env-list kconfig_env.txt" + " --config-out config.gni" ],
+    "",
+    [ product_config_file ])
 
 import("$root_out_dir/config.gni")
 
 OSTOPDIR = "//kernel/uniproton/src"
 OSTHIRDPARTY = "//third_party"
+
+HDFTOPDIR = "//drivers/hdf_core/adapter/khdf/uniproton"
+
+template("kernel_module") {
+  build_gn = rebase_path("BUILD.gn")
+  print("build_gn is $build_gn")
+  cmd = "grep -c '^\s*\(kernel_module\|hdf_driver\)\s*(\s*\S*\s*)\s*{\s*\$' $build_gn"
+  modules_count = exec_script("//build/lite/run_shell_cmd.py", [ cmd ], "value")
+  if (modules_count == 1) {
+    auto_config = true
+  }
+
+  cmd = "if grep -q '^\s*\(config\s*(\s*\"public\"\s*)\|module_group\s*(\s*\"\S*\"\s*)\)\s*{\s*\$' $build_gn; then echo true; else echo false; fi"
+  has_public_config =
+      exec_script("//build/lite/run_shell_cmd.py", [ cmd ], "value")
+  if (!has_public_config && defined(auto_config)) {
+    config("public") {
+      configs = []
+    }
+  }
+
+  current_dir_name = get_path_info(rebase_path("."), "file")
+  if (target_name != current_dir_name) {
+    cmd = "if grep -q '^\s*\(module_group\|group\)\s*(\s*\"$current_dir_name\"\s*)\s*{\s*\$' $build_gn; then echo true; else echo false; fi"
+    has_current_dir_group =
+        exec_script("//build/lite/run_shell_cmd.py", [ cmd ], "value")
+    if (!has_current_dir_group && defined(auto_config)) {
+      module_name = target_name
+      group(current_dir_name) {
+        public_deps = [ ":$module_name" ]
+      }
+    }
+  }
+
+  if (defined(invoker.module_switch) && !invoker.module_switch) {
+    group(target_name) {
+      not_needed(invoker, "*")
+    }
+  } else {
+    source_set(target_name) {
+      public_configs = []
+      forward_variables_from(invoker, "*", [ "configs" ])
+      configs += invoker.configs
+      if (has_public_config) {
+        included_public_config = false
+        foreach(cfg, public_configs) {
+          what = "label_no_toolchain"
+          if (get_label_info(cfg, what) == get_label_info(":public", what)) {
+            included_public_config = true
+            included_public_config = false
+          }
+        }
+        if (!included_public_config) {
+          public_configs += [ ":public" ]
+        }
+      }
+    }
+  }
+  not_needed([ "auto_config" ])
+}
+
+template("config") {
+  config(target_name) {
+    if (defined(invoker.module_switch) && !invoker.module_switch &&
+        target_name == "public") {
+      not_needed(invoker, "*")
+      forward_variables_from(invoker, [ "configs" ])
+    } else {
+      forward_variables_from(invoker, "*")
+    }
+  }
+}
+
+template("module_group") {
+  assert(defined(invoker.modules), "modules are must")
+  group(target_name) {
+    deps = []
+    foreach(m, invoker.modules) {
+      deps += [ m ]
+    }
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
+  }
+  config("public") {
+    configs = []
+    foreach(m, invoker.modules) {
+      configs += [ "$m:public" ]
+    }
+    if (defined(invoker.configs)) {
+      configs += invoker.configs
+    }
+  }
+}
 
 KERNEL_BASE_INCLUDE_DIRS = [
   "$OSTOPDIR/arch/include",
@@ -76,9 +171,7 @@ KERNEL_SWTMR_SOURCES = [
   "$OSTOPDIR/core/kernel/timer/swtmr/prt_swtmr_minor.c",
 ]
 
-KERNEL_IPC_EVENT_SOURCES = [
-  "$OSTOPDIR/core/ipc/event/prt_event.c",
-]
+KERNEL_IPC_EVENT_SOURCES = [ "$OSTOPDIR/core/ipc/event/prt_event.c" ]
 
 KERNEL_IPC_QUEUE_SOURCES = [
   "$OSTOPDIR/core/ipc/queue/prt_queue.c",
@@ -95,7 +188,7 @@ KERNEL_IPC_SEM_SOURCES = [
 
 KERNEL_MEM_SOURCES = [
   "$OSTOPDIR/mem/prt_mem.c",
-  "$OSTOPDIR/mem/fsc/prt_fscmem.c"
+  "$OSTOPDIR/mem/fsc/prt_fscmem.c",
 ]
 
 KERNEL_OM_SOURCES = [
@@ -113,13 +206,11 @@ KERNEL_OM_CPUP_SOURCES = [
   "$OSTOPDIR/om/cpup/prt_cpup_warn.c",
 ]
 
-KERNEL_SECURITY_SOURCES = [
-  "$OSTOPDIR/security/rnd/prt_rnd_set.c"
-]
+KERNEL_SECURITY_SOURCES = [ "$OSTOPDIR/security/rnd/prt_rnd_set.c" ]
 
 KERNEL_UTILITY_SOURCES = [
   "$OSTOPDIR/utility/lib/prt_lib_math64.c",
-  "$OSTOPDIR/utility/lib/prt_lib_version.c"
+  "$OSTOPDIR/utility/lib/prt_lib_version.c",
 ]
 
 KERNEL_FS_INCLUDE_DIRS = [
@@ -139,9 +230,7 @@ KERNEL_FS_SOURCES = [
   "$OSTOPDIR/fs/littlefs/lfs_adapter.c",
 ]
 
-KERNEL_LWIP_INCLUDE_DIRS = [
-  "$OSTOPDIR/net/lwip-2.1/include"
-]
+KERNEL_LWIP_INCLUDE_DIRS = [ "$OSTOPDIR/net/lwip-2.1/include" ]
 
 KERNEL_LWIP_SOURCES = [
   "$OSTOPDIR/net/lwip-2.1/src/driverif.c",
@@ -162,9 +251,7 @@ ARCH_ARMVM7_M_SOURCES = [
   "$OSTOPDIR/arch/cpu/armv7-m/common/prt_port.c",
 ]
 
-ARCH_ARMVM7_M_INCLUDE_DIRS = [
-  "$OSTOPDIR/arch/cpu/armv7-m/common",
-]
+ARCH_ARMVM7_M_INCLUDE_DIRS = [ "$OSTOPDIR/arch/cpu/armv7-m/common" ]
 
 ARCH_CORTEX_M4_SOURCES = [
   "$OSTOPDIR/arch/cpu/armv7-m/cortex-m4/prt_dispatch.S",
@@ -174,6 +261,18 @@ ARCH_CORTEX_M4_SOURCES = [
   "$OSTOPDIR/arch/cpu/armv7-m/cortex-m4/prt_vector.S",
 ]
 
-ARCH_CORTEX_M4_INCLUDE_DIRS = [
-  "$OSTOPDIR/arch/cpu/armv7-m/cortex-m4",
-]
+ARCH_CORTEX_M4_INCLUDE_DIRS = [ "$OSTOPDIR/arch/cpu/armv7-m/cortex-m4" ]
+
+set_defaults("kernel_module") {
+  configs = [
+    "//kernel/uniproton:os_config",
+    "//kernel/uniproton:kernel_config",
+    "//kernel/uniproton:public",
+  ]
+  visibility = [
+    ":*",
+    "..:*",
+    "../..:*",
+    "//kernel/uniproton:*",
+  ]
+}
