@@ -168,6 +168,13 @@ config("os_config") {
   }
 }
 
+config("public") {
+  include_dirs = [
+    "//kernel/uniproton/src/arch/include",
+    "//kernel/uniproton/src/core/kernel/include",
+  ]
+}
+
 ohos_static_library("notice") {
   license_file = "./NOTICE"
 }
@@ -216,6 +223,9 @@ static_library("libkernel") {
 
   deps = [ "//third_party/bounds_checking_function:libsec_static" ]
   deps += [ "//third_party/musl/porting/uniproton/kernel:kernel" ]
+  if (defined(DRIVERS_HDF)) {
+    deps += [ HDFTOPDIR ]
+  }
 }
 
 group("kernel") {
