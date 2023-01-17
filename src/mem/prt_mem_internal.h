@@ -28,12 +28,16 @@
 /* 申请一个内存块 */
 typedef void *(*MemAllocFunc)(U32 mid, U32 size);
 
+/* 申请size字节并返回指向已分配内存的指针，内存地址将是boundary的倍数 */
+typedef void *(*MemAllocAlignFunc)(U32 mid, U32 size, U32 boundary);
+
 /* 释放一个内存块  */
 typedef U32 (*MemFreeFunc)(void *addr);
 
 struct TagMemFuncLib {
     void *addr;        /* 分区起始地址 */
     MemAllocFunc alloc; /* 申请一个内存块 */
+    MemAllocAlignFunc allocAlign; /* 申请size字节并返回指向已分配内存的指针，内存地址将是boundary的倍数 */
     MemFreeFunc free;   /* 释放一个内存块 */
 };
 

@@ -28,6 +28,20 @@ OS_SEC_TEXT void *PRT_MemAlloc(U32 mid, U8 ptNo, U32 size)
     return addr;
 }
 
+OS_SEC_TEXT void *PRT_MemAllocAlign(U32 mid, U8 ptNo, U32 size, U32 boundary)
+{
+    void *addr = NULL;
+    uintptr_t intSave;
+
+    (void)ptNo;
+
+    intSave = PRT_HwiLock();
+    addr = g_memArithAPI.allocAlign(mid, size, boundary);
+    PRT_HwiRestore(intSave);
+
+    return addr;
+}
+
 OS_SEC_TEXT U32 PRT_MemFree(U32 mid, void *addr)
 {
     U32 ret;
