@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2022 Huawei Technologies Co., Ltd. All rights reserved.
+ * Copyright (c) 2009-2023 Huawei Technologies Co., Ltd. All rights reserved.
  *
  * UniProton is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
@@ -17,9 +17,6 @@
 
 /* 判断初始化内存地址和大小是否为4字节对齐 */
 #define OS_MEM_GETBIT(addr) (addr & (U32)(sizeof(U32) - 1))
-
-#define OS_MEM_IS_POW_TWO(value)    ((((uintptr_t)(value)) & ((uintptr_t)(value) - 1)) == 0)
-#define OS_MEM_IS_ALIGNED(a, b)     (!(((uintptr_t)(a)) & (((uintptr_t)(b)) - 1)))
 
 OS_SEC_BSS struct TagMemFuncLib g_memArithAPI; /* 算法对应API */
 OS_SEC_BSS struct TagFscMemCtrl g_fscMemNodeList[OS_FSC_MEM_LAST_IDX];
@@ -133,20 +130,6 @@ OS_SEC_TEXT void *OsFscMemAllocInner(U32 mid, U32 size, uintptr_t align)
     return (void *)usrAddr;
 }
 
-OS_SEC_TEXT void *OsFscMemAlloc(U32 mid, U32 size)
-{
-    return OsFscMemAllocInner(mid, size, OS_FSC_MEM_SIZE_ALIGN);
-}
-
-OS_SEC_TEXT void *OsFscMemAllocAlign(U32 mid, U32 size, U32 boundary)
-{
-    if ((boundary == 0) || !OS_MEM_IS_POW_TWO(boundary) || !OS_MEM_IS_ALIGNED(boundary, sizeof(void *))) {
-        OS_REPORT_ERROR(OS_ERRNO_MEM_ALLOC_ALIGNPOW_INVALID);
-        return NULL;
-    }
-    return OsFscMemAllocInner(mid, size, boundary);
-}
-
 OS_SEC_TEXT U32 OsFscMemFree(void *addr)
 {
     struct TagFscMemCtrl *prevBlk = NULL; /* 前一内存块指针 */
@@ -209,12 +192,16 @@ OS_SEC_TEXT U32 OsFscMemFree(void *addr)
 OS_SEC_TEXT void *OsMemAlloc(enum MoudleId mid, U8 ptNo, U32 size)
 {
     (void)ptNo;
-    return OsFscMemAlloc((U32)mid, size);
+    return OsFscMemAllocInner(mid, size, OS_FSC_MEM_SIZE_ALIGN);
 }
 
 OS_SEC_TEXT void *OsMemAllocAlign(U32 mid, U8 ptNo, U32 size, enum MemAlign alignPow)
 {
     (void)ptNo;
+    if (alignPow >= MEM_ADDR_BUTT || alignPow < MEM_ADDR_ALIGN_004) {
+        OS_REPORT_ERROR(OS_ERRNO_MEM_ALLOC_ALIGNPOW_INVALID);
+        return NULL;
+    }
     return OsFscMemAllocInner(mid, size, (1U << (U32)alignPow));
 }
 
@@ -282,8 +269,8 @@ OS_SEC_TEXT U32 OsFscMemInit(U32 addr, U32 size)
     nextBlk->next = OS_FSC_MEM_MAGIC_USED;
     nextBlk->size = 0;
 
-    g_memArithAPI.alloc = OsFscMemAlloc;
-    g_memArithAPI.allocAlign = OsFscMemAllocAlign;
+    g_memArithAPI.alloc = OsMemAlloc;
+    g_memArithAPI.allocAlign = OsMemAllocAlign;
     g_memArithAPI.free = OsFscMemFree;
 
     g_osMemAlloc = OsMemAlloc;
