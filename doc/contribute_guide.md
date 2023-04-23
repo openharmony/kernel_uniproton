@@ -683,7 +683,7 @@ git checkout -b master origin/master
 说明：图  
 -->
 **须知：** 
->为了方便用户理解，这是协议的概述。您可以访问网址http://license.coscl.org.cn/MulanPSL2/index.html 了解完整协议内容。
+>为了方便用户理解，这是协议的概述。您可以访问网址http://license.coscl.org.cn/MulanPSL2 了解完整协议内容。
 
 ### 知识产权政策
 
@@ -713,7 +713,7 @@ git checkout -b master origin/master
 
 2.  许可
 
-    UniProton的代码将以MulanPSL2 License，除非华为另选其他许可证 （“可适用的许可证”）。接收者可以访问  [http://license.coscl.org.cn/MulanPSL2/index.html](http://license.coscl.org.cn/MulanPSL2/index.html)查看该许可证的详细内容。
+    UniProton的代码将以MulanPSL2 License，除非华为另选其他许可证 （“可适用的许可证”）。接收者可以访问  [http://license.coscl.org.cn/MulanPSL2](http://license.coscl.org.cn/MulanPSL2)查看该许可证的详细内容。
 
 3.  专利不诉承诺
 
