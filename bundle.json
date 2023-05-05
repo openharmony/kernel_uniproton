@@ -28,7 +28,7 @@
         "name": "uniproton",
         "subsystem": "kernel",
         "syscap": [
-            "SystemCapability.Kernel.uniproton"
+            "SystemCapability.Kernel.Uniproton"
         ],
         "features": [],
         "adapted_system_type": [
@@ -36,7 +36,7 @@
         ],
         "rom": "300KB",
         "ram": "100KB",
-        "deps": {
+        "external_deps": {
             "components": [
                 "utils_lite"
             ],
