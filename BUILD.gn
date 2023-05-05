@@ -170,13 +170,16 @@ config("os_config") {
 
 config("public") {
   include_dirs = [
-    "//kernel/uniproton/src/arch/include",
-    "//kernel/uniproton/src/core/kernel/include",
+    "src/arch/include",
+    "src/core/kernel/include",
   ]
 }
 
 ohos_static_library("notice") {
   license_file = "./NOTICE"
+
+  subsystem_name = "kernel"
+  part_name = "uniproton"
 }
 
 static_library("libkernel") {
