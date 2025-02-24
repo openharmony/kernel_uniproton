@@ -1,19 +1,19 @@
 # UniProton介绍
 
-UniProton主要目的在于为上层业务软件提供一个统一的操作系统平台，屏蔽底层硬件差异，并提供强大的调试功能。使得业务软件可在不同的硬件平台之间快速移植，方便产品芯片选型，降低硬件采购成本和软件维护成本。
+UniProton是一款实时操作系统，具备极致的低时延和灵活的混合关键性部署特性，可以适用于工业控制场景，既支持微控制器MCU，也支持算力强的多核CPU。
 
 ## 功能介绍
 
-- 任务
-- 中断
-- 事件
-- 队列
-- 信号量
-- 内存管理
-- 软件定时器
-- 异常
-- 错误处理
-- cpu占用率
+- [任务](./doc/design/task.md)
+- [中断](./doc/design/hwi.md)
+- [事件](./doc/design/event.md)
+- [队列](./doc/design/queue.md)
+- [信号量](./doc/design/sem.md)
+- [内存管理](./doc/design/mem.md)
+- [软件定时器](./doc/design/timer.md)
+- [异常](./doc/design/exc.md)
+- [错误处理](./doc/design/err.md)
+- [cpu占用率](./doc/design/cpup.md)
 
 注: UniProton基础内核机制请参考[官方介绍](https://gitee.com/openeuler/UniProton)。
 
@@ -53,7 +53,7 @@ alientek
 
 ## 约束
 
-- 当前开源版本仅支持cortex_m4芯片，默认编译脚本的安全编译选项仅支持栈保护，其他选项由用户根据需要自行添加。
+- 当前开源版本支持cortex_m4和armv8芯片，默认编译脚本的安全编译选项仅支持栈保护，其他选项由用户根据需要自行添加。
 
 - 遵循MulanPSL2开源许可协议。
 
