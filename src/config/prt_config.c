@@ -50,6 +50,7 @@ U32 OsSystemReg(void)
 
     sysModInfo.systemClock = OS_SYS_CLOCK;
     sysModInfo.cpuType = OS_CPU_TYPE;
+    sysModInfo.sysTimeHook = OS_SYS_TIME_HOOK;
 #if defined(OS_OPTION_HWI_MAX_NUM_CONFIG)
     sysModInfo.hwiMaxNum = OS_HWI_MAX_NUM_CONFIG;
 #endif
@@ -190,12 +191,24 @@ U32 OsTskConfigInit(void)
 }
 #endif
 
+static U32 OsHwiConfigReg(void)
+{
+#if (OS_INCLUDE_GIC_BASE_ADDR_CONFIG == YES)
+    U32 ret;
+    ret = OsGicConfigRegister((uintptr_t)OS_GIC_BASE_ADDR, (uintptr_t)OS_GICR_OFFSET, (uintptr_t)OS_GICR_STRIDE);
+    if (ret != OS_OK) {
+        return ret;
+    }
+#endif
+    return OS_OK;
+}
+
 /* 系统初始化注册表 */
 struct OsModuleConfigInfo g_moduleConfigTab[] = {
     /* {模块号， 模块注册函数， 模块初始化函数} */
     {OS_MID_SYS, {OsSysConfigReg, NULL}},
     {OS_MID_MEM, {OsMemConfigReg, OsMemConfigInit}},
-    {OS_MID_HWI, {NULL, OsHwiConfigInit}},
+    {OS_MID_HWI, {OsHwiConfigReg, OsHwiConfigInit}},
     {OS_MID_HARDDRV, {NULL, PRT_HardDrvInit}},
     {OS_MID_HOOK, {OsHookConfigReg, OsHookConfigInit}},
     {OS_MID_EXC, {NULL, OsExcConfigInit}},
